@@ -21,12 +21,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { proposalValidation } from "@/pages/schema";
 
 function Proposal() {
-
   const {
     register,
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setValue,
   } = useForm({
     resolver: yupResolver(proposalValidation),
@@ -150,7 +149,6 @@ function Proposal() {
     const updatedCheckedSDGs = [...checkedSDGs];
     updatedCheckedSDGs[index] = !updatedCheckedSDGs[index];
     setCheckedSDGs(updatedCheckedSDGs);
-    console.log("Checked SDGs:", updatedCheckedSDGs);
   };
 
   // FOR UPDATING THE DATABASE
@@ -162,8 +160,11 @@ function Proposal() {
     },
   });
 
+  const [ganttFiles, setGanttFiles] = useState(null);
+  const [budgetFiles, setBudgetFiles] = useState(null);
+
   // SUBMIT BUTTON
-  const onSave = async (data) => {
+  const onSave = async (formData) => {
     try {
       const checkedIndices = checkedSDGs.reduce((acc, isChecked, index) => {
         if (isChecked) {
@@ -183,43 +184,44 @@ function Proposal() {
       }));
 
       let ganttBase64 = "";
-      if (data.gantt && data.gantt[0]) {
-        const ganttFile = data.gantt[0];
+      if (ganttFiles && ganttFiles.length > 0) {
+        const ganttFile = ganttFiles[0];
         ganttBase64 = await fileToBase64(ganttFile);
       }
 
       let budgetBase64 = "";
-      if (data.budget && data.budget[0]) {
-        const budgetFile = data.budget[0];
+      if (budgetFiles && budgetFiles.length > 0) {
+        const budgetFile = budgetFiles[0];
         budgetBase64 = await fileToBase64(budgetFile);
       }
 
       const passData = {
-        programTitle: data.programTitle,
+        programTitle: formData.programTitle,
         projectLeader: projectLeaderData,
         projectStaff: projectStaffData,
         selectedSDGs: checkedIndices,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        executiveSummary: data.summary,
-        generalObjective: data.genObjective,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        executiveSummary: formData.summary,
+        generalObjective: formData.genObjective,
         specObjective: fields.map((item) => item.value),
-        rationalSignificance: data.rational,
-        reviewOfRelatedLiterature: data.reviewrelatedlit,
-        methodology: data.methodology,
-        references: data.reference,
-        gantt: ganttBase64,
-        budget: budgetBase64,
+        rationalSignificance: formData.rational,
+        reviewOfRelatedLiterature: formData.reviewrelatedlit,
+        methodology: formData.methodology,
+        references: formData.reference,
       };
-      await mutate(passData);
 
-      console.log("Successfully submitted the proposal:", data);
-      toast.success(
-        "Successfully submitted the proposal. Visit the Under Evaluation page to see it.",
-        {
-          autoClose: 1200,
-        }
-      );
+      // Include both gantt and budget properties in passData
+      passData.ganttChart = ganttBase64 || passData.ganttChart || "";
+      passData.lib = budgetBase64 || passData.lib || "";
+
+      await mutate(passData);
+      console.log(ganttFiles); // CHECK IF GANTTFILES IS PRESENT
+      console.log(budgetFiles); // CHECK IF BUDGETFILES IS PRESENT
+      console.log("Successfully updated the proposal:", passData); // LOG THE DATA BEING PASSED TO DB
+      toast.success("Successfully updated the proposal.", {
+        autoClose: 1200,
+      });
     } catch (error) {
       console.error("Error updating proposal:", error);
       toast.error("Error updating proposal. Please try again later.", {
@@ -795,9 +797,8 @@ function Proposal() {
                     <h5 className="fw-bold" style={{ color: "#387ADF" }}>
                       Major Activities/Workplan (Gantt Chart)
                     </h5>
-                    {/* Visible label for file input */}
                     <label
-                      htmlFor="gantt"
+                      htmlFor="ganttChart"
                       className={`${styles.custom_file_upload}`}
                     >
                       Upload File
@@ -806,38 +807,34 @@ function Proposal() {
                         className="mt-2 fs-3"
                       ></FontAwesomeIcon>
                     </label>
-                    {/* Hidden file input */}
                     <input
                       type="file"
-                      name="gantt"
-                      id="gantt"
+                      name="ganttChart"
+                      id="ganttChart"
+                      accept="application/pdf"
                       hidden
-                      multiple // Allow multiple file selection
+                      // multiple
                       data-multiple-caption="{count} files selected"
-                      {...register("gantt")}
-                      // Add onchange event listener to trigger when file is selected
+                      {...register("ganttChart")}
                       onChange={(e) => {
-                        // Get the selected files
                         const files = e.target.files;
-                        // Get the label element
+                        setGanttFiles(files);
                         const label = document.querySelector(".file-label");
-                        // Clear previous content
                         label.textContent = "";
-                        // Display "2 files" if there are 2 or more files selected
                         if (files && files.length >= 2) {
                           const fileCountSpan = document.createElement("span");
                           fileCountSpan.textContent = files.length + " files";
                           label.appendChild(fileCountSpan);
                         } else if (files && files.length === 1) {
-                          // Display the name of the single file if there's only one file selected
                           const fileNameSpan = document.createElement("span");
                           fileNameSpan.textContent = files[0].name;
                           label.appendChild(fileNameSpan);
                         }
                       }}
                     />
-                    {/* Visible element to display selected file names */}
-                    <div className="file-label mt-3 fs-6 text-primary"></div>
+                    <div className={`${styles.file_label_container} mt-3`}>
+                      <span className="file-label fs-6 text-primary"></span>
+                    </div>
                   </Col>
 
                   {/* Line Item Budget */}
@@ -845,47 +842,42 @@ function Proposal() {
                     <h5 className="fw-bold" style={{ color: "#387ADF" }}>
                       Line Item Budget
                     </h5>
-                    {/* Visible label for file input */}
                     <label
-                      htmlFor="budget"
+                      htmlFor="lib"
                       className={`${styles.custom_file_upload}`}
                     >
                       Upload File
                       <FontAwesomeIcon icon={faUpload} className="ms-2 fs-4" />
                     </label>
-                    {/* Hidden file input */}
                     <input
                       type="file"
-                      name="budget"
-                      id="budget"
+                      name="lib"
+                      id="lib"
+                      accept="application/pdf"
                       hidden
-                      multiple // Allow multiple file selection
-                      {...register("budget")}
-                      // Add onchange event listener to trigger when file is selected
+                      // multiple
+                      {...register("lib")}
                       onChange={(e) => {
-                        // Get the selected files
                         const budgetFiles = e.target.files;
-                        // Get the label element
+                        setBudgetFiles(budgetFiles);
                         const budgetLabel =
-                          document.querySelector(".file-label-budget");
-                        // Clear previous content
+                          document.querySelector(".file-label-lib");
                         budgetLabel.textContent = "";
-                        // Display "2 files" if there are 2 or more files selected
                         if (budgetFiles && budgetFiles.length >= 2) {
                           const fileCountSpan = document.createElement("span");
                           fileCountSpan.textContent =
                             budgetFiles.length + " files";
                           budgetLabel.appendChild(fileCountSpan);
                         } else if (budgetFiles && budgetFiles.length === 1) {
-                          // Display the name of the single file if there's only one file selected
                           const fileNameSpan = document.createElement("span");
                           fileNameSpan.textContent = budgetFiles[0].name;
                           budgetLabel.appendChild(fileNameSpan);
                         }
                       }}
                     />
-                    {/* Visible element to display selected file names */}
-                    <div className="file-label mt-3 fs-6 text-primary file-label-budget"></div>
+                    <div className={`${styles.file_label_container} mt-3`}>
+                      <span className="file-label-lib fs-6 text-primary"></span>
+                    </div>
                   </Col>
                 </Row>
               </Container>
@@ -897,7 +889,7 @@ function Proposal() {
                 type="submit"
               >
                 Submit
-                <div className={styles.icon}>
+                {/* <div className={styles.icon}>
                   <svg
                     height="24"
                     width="24"
@@ -910,7 +902,7 @@ function Proposal() {
                       fill="currentColor"
                     ></path>
                   </svg>
-                </div>
+                </div> */}
               </button>
             </div>
 

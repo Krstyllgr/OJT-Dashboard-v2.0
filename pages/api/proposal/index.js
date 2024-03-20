@@ -44,8 +44,8 @@ export const updateProposal = ({
   reviewOfRelatedLiterature,
   methodology,
   references,
-  gantt,
-  budget
+  ganttChart,
+  lib
 }) => {
   const response = axiosClient.put(`${status}/${id}`, {
     programTitle,
@@ -61,8 +61,8 @@ export const updateProposal = ({
     reviewOfRelatedLiterature,
     methodology,
     references,
-    gantt,
-    budget,
+    ganttChart,
+    lib,
   });
   return response;
 };
@@ -82,7 +82,9 @@ export const addProposal = async ({
   rationalSignificance,
   reviewOfRelatedLiterature,
   methodology,
-  references
+  references,
+  ganttChart,
+  lib,
 }) => {
   try {
     // FETCH THE LATEST ID IN EVALUATION
@@ -110,7 +112,9 @@ export const addProposal = async ({
       rationalSignificance,
       reviewOfRelatedLiterature,
       methodology,
-      references
+      references,
+      ganttChart,
+      lib
     });
     return response;
   } catch (error) {

@@ -49,7 +49,6 @@ function Index() {
         .then((response) => {
           setUserProfile(response.data);
           setId(response.data[0].id);
-          console.log(response.data);
         })
         .catch((error) => {
           console.error("Error fetching user profile:", error);
@@ -89,6 +88,9 @@ function Index() {
       });
     } catch (error) {
       console.log(error);
+      toast.error("Error updating the proposal.", {
+        autoClose: 1200,
+      });
     }
   };
 

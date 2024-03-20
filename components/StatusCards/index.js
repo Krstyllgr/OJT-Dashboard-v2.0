@@ -93,8 +93,8 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
     setReview(proposalStatus.reviewOfRelatedLiterature);
     setMethodology(proposalStatus.methodology);
     setReference(proposalStatus.references);
-    setGantt(proposalStatus.gantt);
-    setLIB(proposalStatus.budget);
+    setGantt(proposalStatus.ganttChart);
+    setLIB(proposalStatus.lib);
     setTravelingCost({
       local:
         proposalStatus.lib && proposalStatus.lib

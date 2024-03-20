@@ -12,7 +12,6 @@ import { updateProposal } from "@/pages/api/proposal";
 // import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCircleCheck,
   faRectangleXmark, faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 import { faSquarePlus } from "@fortawesome/free-regular-svg-icons";
@@ -37,6 +36,52 @@ function Proposal( ) {
   const meth = useStore((state) => state.methodology);
   const refer = useStore((state) => state.reference);
   const goal = useStore((state) => state.sdg);
+  const chart = useStore((state) => state.ganttChart);
+  const item = useStore((state) => state.lib);
+
+  // Function to convert Base64 to file Blob
+  const base64ToFileBlob = (base64) => {
+    try {
+      // Check if Base64 string is provided
+      if (!base64) {
+        throw new Error("Base64 string is empty or undefined.");
+      }
+
+      // Decode the Base64 string into binary data
+      const binaryString = atob(base64);
+
+      // Create a Uint8Array from the binary string
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Create a Blob from the Uint8Array
+      return new Blob([bytes], { type: "application/pdf" });
+    } catch (error) {
+      console.error("Error converting Base64 to Blob:", error.message);
+      return null; // Return null or handle the error appropriately
+    }
+  };
+
+  // Function to create URL from Blob
+  const blobToURL = (blob) => {
+    // Check if Blob is valid
+    if (!blob) {
+      console.error("Invalid Blob provided.");
+      return null; // Return null or handle the error appropriately
+    }
+
+    // Create a URL from the Blob
+    return URL.createObjectURL(blob);
+  };
+
+  // Convert Base64 strings to Blobs and create URLs
+  const ganttblob = base64ToFileBlob(chart);
+  const ganttURL = blobToURL(ganttblob);
+
+  const budgetblob = base64ToFileBlob(item);
+  const budgetURL = blobToURL(budgetblob);
 
   const {
     register,
@@ -218,72 +263,74 @@ function Proposal( ) {
   const [budgetFiles, setBudgetFiles] = useState(null);
 
   // SUBMIT BUTTON
- const onSave = async (formData) => {
-   try {
-     const checkedIndices = checkedSDGs.reduce((acc, isChecked, index) => {
-       if (isChecked || isSDGSelected(index)) {
-         acc.push(`SDG: ${index + 1}`);
-       }
-       return acc;
-     }, []);
-     const projectLeaderData = {
-       name: projectLeaderField.name,
-       mail: projectLeaderField.mail,
-       phoneNumber: projectLeaderField.phoneNumber,
-     };
-     const projectStaffData = projectStaffField.map((item) => ({
-       name: item.name,
-       mail: item.mail,
-       phoneNumber: item.phoneNumber,
-     }));
+  const onSave = async (formData) => {
+    try {
+      const checkedIndices = checkedSDGs.reduce((acc, isChecked, index) => {
+        if (isChecked || isSDGSelected(index)) {
+          acc.push(`SDG: ${index + 1}`);
+        }
+        return acc;
+      }, []);
+      const projectLeaderData = {
+        name: projectLeaderField.name,
+        mail: projectLeaderField.mail,
+        phoneNumber: projectLeaderField.phoneNumber,
+      };
+      const projectStaffData = projectStaffField.map((item) => ({
+        name: item.name,
+        mail: item.mail,
+        phoneNumber: item.phoneNumber,
+      }));
 
-     let ganttBase64 = "";
-     if (ganttFiles && ganttFiles.length > 0) {
-       const ganttFile = ganttFiles[0];
-       ganttBase64 = await fileToBase64(ganttFile);
-     }
+      let ganttBase64 = "";
+      if (ganttFiles && ganttFiles.length > 0) {
+        const ganttFile = ganttFiles[0];
+        ganttBase64 = await fileToBase64(ganttFile);
+      }
 
-     let budgetBase64 = "";
-     if (budgetFiles && budgetFiles.length > 0) {
-       const budgetFile = budgetFiles[0];
-       budgetBase64 = await fileToBase64(budgetFile);
-     }
+      let budgetBase64 = "";
+      if (budgetFiles && budgetFiles.length > 0) {
+        const budgetFile = budgetFiles[0];
+        budgetBase64 = await fileToBase64(budgetFile);
+      }
 
-     const passData = {
-       status: updateId,
-       id: idNum,
-       programTitle: formData.programTitle,
-       projectLeader: projectLeaderData,
-       projectStaff: projectStaffData,
-       selectedSDGs: checkedIndices,
-       startDate: formData.startDate,
-       endDate: formData.endDate,
-       executiveSummary: formData.summary,
-       generalObjective: formData.genObjective,
-       specObjective: fields.map((item) => item.value),
-       rationalSignificance: formData.rational,
-       reviewOfRelatedLiterature: formData.reviewrelatedlit,
-       methodology: formData.methodology,
-       references: formData.reference,
-       gantt: ganttBase64,
-       budget: budgetBase64,
-     };
+      const passData = {
+        status: updateId,
+        id: idNum,
+        programTitle: formData.programTitle,
+        projectLeader: projectLeaderData,
+        projectStaff: projectStaffData,
+        selectedSDGs: checkedIndices,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        executiveSummary: formData.summary,
+        generalObjective: formData.genObjective,
+        specObjective: fields.map((item) => item.value),
+        rationalSignificance: formData.rational,
+        reviewOfRelatedLiterature: formData.reviewrelatedlit,
+        methodology: formData.methodology,
+        references: formData.reference,
+      };
 
-     await mutate(passData);
+      // Include both gantt and budget properties in passData
+      passData.ganttChart = ganttBase64 || passData.ganttChart || chart;
+      passData.lib = budgetBase64 || passData.lib || item;
 
-     console.log(ganttFiles); // CHECK IF GANTTFILES IS PRESENT
-     console.log(budgetFiles); // CHECK IF BUDGETFILES IS PRESENT
-     console.log("Successfully updated the proposal:", passData); // LOG THE DATA BEING PASSED TO DB
-     toast.success("Successfully updated the proposal.", {
-       autoClose: 1200,
-     });
-   } catch (error) {
-     console.error("Error updating proposal:", error);
-     toast.error("Error updating proposal. Please try again later.", {
-       autoClose: 1200,
-     });
-   }
- };
+      await mutate(passData);
+      // console.log(ganttFiles); // CHECK IF GANTTFILES IS PRESENT
+      // console.log(budgetFiles); // CHECK IF BUDGETFILES IS PRESENT
+      console.log("Successfully updated the proposal:", passData); // LOG THE DATA BEING PASSED TO DB
+      toast.success("Successfully updated the proposal.", {
+        autoClose: 1200,
+      });
+    } catch (error) {
+      console.error("Error updating proposal:", error);
+      toast.error("Error updating proposal. Please try again later.", {
+        autoClose: 1200,
+      });
+    }
+  };
+
 
   // Function to convert file to Base64
   const fileToBase64 = (file) => {
@@ -862,7 +909,7 @@ function Proposal( ) {
                       Major Activities/Workplan (Gantt Chart)
                     </h5>
                     <label
-                      htmlFor="gantt"
+                      htmlFor="ganttChart"
                       className={`${styles.custom_file_upload}`}
                     >
                       Upload File
@@ -873,16 +920,17 @@ function Proposal( ) {
                     </label>
                     <input
                       type="file"
-                      name="gantt"
-                      id="gantt"
+                      name="ganttChart"
+                      id="ganttChart"
+                      accept="application/pdf"
                       hidden
-                      multiple
+                      // multiple
                       data-multiple-caption="{count} files selected"
-                      {...register("gantt")}
+                      {...register("ganttChart")}
                       onChange={(e) => {
                         const files = e.target.files;
                         setGanttFiles(files);
-                        const label = document.querySelector(".file-label");
+                        const label = document.querySelector(".file-label-gantt");
                         label.textContent = "";
                         if (files && files.length >= 2) {
                           const fileCountSpan = document.createElement("span");
@@ -896,8 +944,17 @@ function Proposal( ) {
                       }}
                     />
                     <div className={`${styles.file_label_container} mt-3`}>
-                      <span className="file-label fs-6 text-primary"></span>
+                      <span className="file-label-gantt fs-6 text-primary"></span>
                     </div>
+
+                    <h6>
+                      Uploaded File:
+                      <span>
+                        <a href={ganttURL} target="_blank">
+                          Gant Chart
+                        </a>
+                      </span>
+                    </h6>
                   </Col>
 
                   {/* Line Item Budget */}
@@ -906,7 +963,7 @@ function Proposal( ) {
                       Line Item Budget
                     </h5>
                     <label
-                      htmlFor="budget"
+                      htmlFor="lib"
                       className={`${styles.custom_file_upload}`}
                     >
                       Upload File
@@ -914,16 +971,17 @@ function Proposal( ) {
                     </label>
                     <input
                       type="file"
-                      name="budget"
-                      id="budget"
+                      name="lib"
+                      id="lib"
+                      accept="application/pdf"
                       hidden
-                      multiple
-                      {...register("budget")}
+                      // multiple
+                      {...register("lib")}
                       onChange={(e) => {
                         const budgetFiles = e.target.files;
                         setBudgetFiles(budgetFiles);
                         const budgetLabel =
-                          document.querySelector(".file-label-budget");
+                          document.querySelector(".file-label-lib");
                         budgetLabel.textContent = "";
                         if (budgetFiles && budgetFiles.length >= 2) {
                           const fileCountSpan = document.createElement("span");
@@ -938,8 +996,17 @@ function Proposal( ) {
                       }}
                     />
                     <div className={`${styles.file_label_container} mt-3`}>
-                      <span className="file-label-budget fs-6 text-primary"></span>
+                      <span className="file-label-lib fs-6 text-primary"></span>
                     </div>
+
+                    <h6>
+                      Uploaded File:
+                      <span>
+                        <a href={budgetURL} target="_blank">
+                          Line Item Budget
+                        </a>
+                      </span>
+                    </h6>
                   </Col>
                 </Row>
               </Container>
