@@ -214,10 +214,17 @@ function Proposal() {
       await mutate(passData);
 
       console.log("Successfully submitted the proposal:", data);
-      toast.success("Successfully submitted the proposal. Visit the Under Evaluation page to see it.");
+      toast.success(
+        "Successfully submitted the proposal. Visit the Under Evaluation page to see it.",
+        {
+          autoClose: 1200,
+        }
+      );
     } catch (error) {
       console.error("Error updating proposal:", error);
-      toast.error("Error updating proposal. Please try again later.");
+      toast.error("Error updating proposal. Please try again later.", {
+        autoClose: 1200,
+      });
     }
   };
 
@@ -788,25 +795,49 @@ function Proposal() {
                     <h5 className="fw-bold" style={{ color: "#387ADF" }}>
                       Major Activities/Workplan (Gantt Chart)
                     </h5>
+                    {/* Visible label for file input */}
                     <label
                       htmlFor="gantt"
                       className={`${styles.custom_file_upload}`}
                     >
-                      Upload Gantt Chart
+                      Upload File
                       <FontAwesomeIcon
                         icon={faUpload}
                         className="mt-2 fs-3"
                       ></FontAwesomeIcon>
                     </label>
+                    {/* Hidden file input */}
                     <input
                       type="file"
                       name="gantt"
                       id="gantt"
-                      className="ms-5"
                       hidden
-                      multiple
+                      multiple // Allow multiple file selection
+                      data-multiple-caption="{count} files selected"
                       {...register("gantt")}
+                      // Add onchange event listener to trigger when file is selected
+                      onChange={(e) => {
+                        // Get the selected files
+                        const files = e.target.files;
+                        // Get the label element
+                        const label = document.querySelector(".file-label");
+                        // Clear previous content
+                        label.textContent = "";
+                        // Display "2 files" if there are 2 or more files selected
+                        if (files && files.length >= 2) {
+                          const fileCountSpan = document.createElement("span");
+                          fileCountSpan.textContent = files.length + " files";
+                          label.appendChild(fileCountSpan);
+                        } else if (files && files.length === 1) {
+                          // Display the name of the single file if there's only one file selected
+                          const fileNameSpan = document.createElement("span");
+                          fileNameSpan.textContent = files[0].name;
+                          label.appendChild(fileNameSpan);
+                        }
+                      }}
                     />
+                    {/* Visible element to display selected file names */}
+                    <div className="file-label mt-3 fs-6 text-primary"></div>
                   </Col>
 
                   {/* Line Item Budget */}
@@ -814,38 +845,75 @@ function Proposal() {
                     <h5 className="fw-bold" style={{ color: "#387ADF" }}>
                       Line Item Budget
                     </h5>
+                    {/* Visible label for file input */}
+                    <label
+                      htmlFor="budget"
+                      className={`${styles.custom_file_upload}`}
+                    >
+                      Upload File
+                      <FontAwesomeIcon icon={faUpload} className="ms-2 fs-4" />
+                    </label>
+                    {/* Hidden file input */}
                     <input
                       type="file"
                       name="budget"
                       id="budget"
-                      className="ms-5"
-                      multiple
+                      hidden
+                      multiple // Allow multiple file selection
                       {...register("budget")}
-                    ></input>
+                      // Add onchange event listener to trigger when file is selected
+                      onChange={(e) => {
+                        // Get the selected files
+                        const budgetFiles = e.target.files;
+                        // Get the label element
+                        const budgetLabel =
+                          document.querySelector(".file-label-budget");
+                        // Clear previous content
+                        budgetLabel.textContent = "";
+                        // Display "2 files" if there are 2 or more files selected
+                        if (budgetFiles && budgetFiles.length >= 2) {
+                          const fileCountSpan = document.createElement("span");
+                          fileCountSpan.textContent =
+                            budgetFiles.length + " files";
+                          budgetLabel.appendChild(fileCountSpan);
+                        } else if (budgetFiles && budgetFiles.length === 1) {
+                          // Display the name of the single file if there's only one file selected
+                          const fileNameSpan = document.createElement("span");
+                          fileNameSpan.textContent = budgetFiles[0].name;
+                          budgetLabel.appendChild(fileNameSpan);
+                        }
+                      }}
+                    />
+                    {/* Visible element to display selected file names */}
+                    <div className="file-label mt-3 fs-6 text-primary file-label-budget"></div>
                   </Col>
                 </Row>
               </Container>
             </>
-
-            <div className="d-flex justify-content-end me-4">
+            <div className="d-flex justify-content-end me-4 mb-4">
               <button
-                disabled={isSubmitting}
+                className={styles.cssbuttons_io_button}
                 onClick={handleSubmit(onSave)}
                 type="submit"
-                className="btn btn-primary mb-4"
               >
-                {isSubmitting ? (
-                  <div
-                    className="spinner-border text-light spinner-border-sm"
-                    role="status"
+                Submit
+                <div className={styles.icon}>
+                  <svg
+                    height="24"
+                    width="24"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                ) : (
-                  "Submit"
-                )}
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                    <path
+                      d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                      fill="currentColor"
+                    ></path>
+                  </svg>
+                </div>
               </button>
             </div>
+
             <ToastContainer position="top-center" />
           </Form>
         </FormProvider>

@@ -343,9 +343,9 @@
 
 /* REACT HOOK FORM FILE UPLOADER */
 .custom_file_upload {
-  border: 1px dashed #000;
-  height: 100px;
-  width: 50%;
+  border: 2px dashed #000;
+  height: 100%;
+  width: 100%;
   justify-content: center;
   align-items: center;
   color: #000;
@@ -360,6 +360,131 @@
 .custom_file_upload:hover {
   color: #387ADF;
   border-color: #387ADF;
+  opacity: .5;
+}
+
+/* CSS Styles */
+.file_name {
+  display: inline-block;
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.file_label {
+  font-size: 14px;
+}
+
+/* SUBMIT BUTTON PROPOSAL FORM */
+.cssbuttons_io_button {
+  background: #387ADF;
+  color: white;
+  font-family: inherit;
+  padding: 0.35em;
+  padding-left: 1.2em;
+  font-size: 17px;
+  font-weight: 500;
+  border-radius: 0.9em;
+  border: none;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  box-shadow: inset 0 0 1.6em -0.6em #387ADF;
+  overflow: hidden;
+  position: relative;
+  height: 2.8em;
+  padding-right: 3.3em;
+  cursor: pointer;
+}
+
+.cssbuttons_io_button .icon {
+  background: white;
+  margin-left: 1em;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.2em;
+  width: 2.2em;
+  border-radius: 0.7em;
+  box-shadow: 0.1em 0.1em 0.6em 0.2em #387ADF;
+  right: 0.3em;
+  transition: all 0.3s;
+}
+
+.cssbuttons_io_button:hover .icon {
+  width: calc(100% - 0.6em);
+}
+
+.cssbuttons_io_button .icon svg {
+  width: 1.1em;
+  transition: transform 0.3s;
+  color: #387ADF;
+}
+
+.cssbuttons_io_button:hover .icon svg {
+  transform: translateX(0.1em);
+}
+
+.cssbuttons_io_button:active .icon {
+  transform: scale(0.95);
 }
 
 
+/* edit button profile */
+.edit_button {
+  display: flex;
+  margin: auto;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 2px;
+  height: 40px;
+  width: 85px;
+  border: none;
+  color: #000;
+  background: #fff;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.lable {
+  line-height: 22px;
+  font-size: 19px;
+  color: #000;
+  font-family: sans-serif;
+  letter-spacing: 1px;
+}
+
+.edit_button:hover {
+  background: #fff;
+}
+
+.edit_button:hover .svg_icon {
+  animation: lr 1s linear infinite;
+}
+
+@keyframes lr {
+  0% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-1px);
+  }
+
+  75% {
+    transform: translateX(1px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+.file_label_container {
+  background-color: #e6f0ff; /* Light blue background color */
+  padding: 5px 10px; /* Adjust padding as needed */
+  border-radius: 5px; /* Add some border radius for rounded corners */
+  display: inline-block; /* Make the container inline-block to fit content */
+}

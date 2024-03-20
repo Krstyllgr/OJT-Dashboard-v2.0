@@ -12,6 +12,7 @@ import { updateProposal } from "@/pages/api/proposal";
 // import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faCircleCheck,
   faRectangleXmark, faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 import { faSquarePlus } from "@fortawesome/free-regular-svg-icons";
@@ -164,6 +165,7 @@ function Proposal( ) {
     }));
   };
 
+  // Array containing the labels for the Sustainable Development Goals (SDGs)
   const sdgLabels = [
     "No Poverty",
     "Zero Hunger",
@@ -184,8 +186,10 @@ function Proposal( ) {
     "Partnerships for the Goals",
   ];
 
+  // State hook to manage the checked state of SDGs
   const [checkedSDGs, setCheckedSDGs] = useState(Array(17).fill(false));
 
+  // Function to handle checkbox change
   const handleCheckboxChange = (index) => {
     const updatedCheckedSDGs = [...checkedSDGs];
     updatedCheckedSDGs[index] = !updatedCheckedSDGs[index];
@@ -195,7 +199,7 @@ function Proposal( ) {
 
   // SDG INITIAL VALUE
   const isSDGSelected = (index) => {
-    if (!goal) return false; // Check if goal is undefined or null
+    if (!goal || !Array.isArray(goal)) return false; // Check if goal is undefined, null, or not an array
 
     const sdgString = `SDG: ${index + 1}`;
     return goal.includes(sdgString);
@@ -210,66 +214,76 @@ function Proposal( ) {
     },
   });
 
+  const [ganttFiles, setGanttFiles] = useState(null);
+  const [budgetFiles, setBudgetFiles] = useState(null);
+
   // SUBMIT BUTTON
-  const onSave = async (data) => {
-    try {
-      const checkedIndices = checkedSDGs.reduce((acc, isChecked, index) => {
-        if (isChecked || isSDGSelected(index)) {
-          acc.push(`SDG: ${index + 1}`);
-        }
-        return acc;
-      }, []);
-      const projectLeaderData = {
-        name: projectLeaderField.name,
-        mail: projectLeaderField.mail,
-        phoneNumber: projectLeaderField.phoneNumber,
-      };
-      const projectStaffData = projectStaffField.map((item) => ({
-        name: item.name,
-        mail: item.mail,
-        phoneNumber: item.phoneNumber,
-      }));
+ const onSave = async (formData) => {
+   try {
+     const checkedIndices = checkedSDGs.reduce((acc, isChecked, index) => {
+       if (isChecked || isSDGSelected(index)) {
+         acc.push(`SDG: ${index + 1}`);
+       }
+       return acc;
+     }, []);
+     const projectLeaderData = {
+       name: projectLeaderField.name,
+       mail: projectLeaderField.mail,
+       phoneNumber: projectLeaderField.phoneNumber,
+     };
+     const projectStaffData = projectStaffField.map((item) => ({
+       name: item.name,
+       mail: item.mail,
+       phoneNumber: item.phoneNumber,
+     }));
 
-      let ganttBase64 = "";
-      if (data.gantt && data.gantt[0]) {
-        const ganttFile = data.gantt[0];
-        ganttBase64 = await fileToBase64(ganttFile);
-      }
+     let ganttBase64 = "";
+     if (ganttFiles && ganttFiles.length > 0) {
+       const ganttFile = ganttFiles[0];
+       ganttBase64 = await fileToBase64(ganttFile);
+     }
 
-      let budgetBase64 = "";
-      if (data.budget && data.budget[0]) {
-        const budgetFile = data.budget[0];
-        budgetBase64 = await fileToBase64(budgetFile);
-      }
+     let budgetBase64 = "";
+     if (budgetFiles && budgetFiles.length > 0) {
+       const budgetFile = budgetFiles[0];
+       budgetBase64 = await fileToBase64(budgetFile);
+     }
 
-      const passData = {
-        status: updateId,
-        id: idNum,
-        programTitle: data.programTitle,
-        projectLeader: projectLeaderData,
-        projectStaff: projectStaffData,
-        selectedSDGs: checkedIndices,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        executiveSummary: data.summary,
-        generalObjective: data.genObjective,
-        specObjective: fields.map((item) => item.value),
-        rationalSignificance: data.rational,
-        reviewOfRelatedLiterature: data.reviewrelatedlit,
-        methodology: data.methodology,
-        references: data.reference,
-        gantt: ganttBase64,
-        budget: budgetBase64,
-      };
-      await mutate(passData);
+     const passData = {
+       status: updateId,
+       id: idNum,
+       programTitle: formData.programTitle,
+       projectLeader: projectLeaderData,
+       projectStaff: projectStaffData,
+       selectedSDGs: checkedIndices,
+       startDate: formData.startDate,
+       endDate: formData.endDate,
+       executiveSummary: formData.summary,
+       generalObjective: formData.genObjective,
+       specObjective: fields.map((item) => item.value),
+       rationalSignificance: formData.rational,
+       reviewOfRelatedLiterature: formData.reviewrelatedlit,
+       methodology: formData.methodology,
+       references: formData.reference,
+       gantt: ganttBase64,
+       budget: budgetBase64,
+     };
 
-      console.log("Successfully updated the proposal:", data);
-      toast.success("Successfully updated the proposal.");
-    } catch (error) {
-      console.error("Error updating proposal:", error);
-      toast.error("Error updating proposal. Please try again later.");
-    }
-  };
+     await mutate(passData);
+
+     console.log(ganttFiles); // CHECK IF GANTTFILES IS PRESENT
+     console.log(budgetFiles); // CHECK IF BUDGETFILES IS PRESENT
+     console.log("Successfully updated the proposal:", passData); // LOG THE DATA BEING PASSED TO DB
+     toast.success("Successfully updated the proposal.", {
+       autoClose: 1200,
+     });
+   } catch (error) {
+     console.error("Error updating proposal:", error);
+     toast.error("Error updating proposal. Please try again later.", {
+       autoClose: 1200,
+     });
+   }
+ };
 
   // Function to convert file to Base64
   const fileToBase64 = (file) => {
@@ -851,7 +865,7 @@ function Proposal( ) {
                       htmlFor="gantt"
                       className={`${styles.custom_file_upload}`}
                     >
-                      Upload Gantt Chart
+                      Upload File
                       <FontAwesomeIcon
                         icon={faUpload}
                         className="mt-2 fs-3"
@@ -861,11 +875,29 @@ function Proposal( ) {
                       type="file"
                       name="gantt"
                       id="gantt"
-                      className="ms-5"
                       hidden
                       multiple
+                      data-multiple-caption="{count} files selected"
                       {...register("gantt")}
+                      onChange={(e) => {
+                        const files = e.target.files;
+                        setGanttFiles(files);
+                        const label = document.querySelector(".file-label");
+                        label.textContent = "";
+                        if (files && files.length >= 2) {
+                          const fileCountSpan = document.createElement("span");
+                          fileCountSpan.textContent = files.length + " files";
+                          label.appendChild(fileCountSpan);
+                        } else if (files && files.length === 1) {
+                          const fileNameSpan = document.createElement("span");
+                          fileNameSpan.textContent = files[0].name;
+                          label.appendChild(fileNameSpan);
+                        }
+                      }}
                     />
+                    <div className={`${styles.file_label_container} mt-3`}>
+                      <span className="file-label fs-6 text-primary"></span>
+                    </div>
                   </Col>
 
                   {/* Line Item Budget */}
@@ -873,36 +905,67 @@ function Proposal( ) {
                     <h5 className="fw-bold" style={{ color: "#387ADF" }}>
                       Line Item Budget
                     </h5>
+                    <label
+                      htmlFor="budget"
+                      className={`${styles.custom_file_upload}`}
+                    >
+                      Upload File
+                      <FontAwesomeIcon icon={faUpload} className="ms-2 fs-4" />
+                    </label>
                     <input
                       type="file"
                       name="budget"
                       id="budget"
-                      className="ms-5"
+                      hidden
                       multiple
                       {...register("budget")}
-                    ></input>
+                      onChange={(e) => {
+                        const budgetFiles = e.target.files;
+                        setBudgetFiles(budgetFiles);
+                        const budgetLabel =
+                          document.querySelector(".file-label-budget");
+                        budgetLabel.textContent = "";
+                        if (budgetFiles && budgetFiles.length >= 2) {
+                          const fileCountSpan = document.createElement("span");
+                          fileCountSpan.textContent =
+                            budgetFiles.length + " files";
+                          budgetLabel.appendChild(fileCountSpan);
+                        } else if (budgetFiles && budgetFiles.length === 1) {
+                          const fileNameSpan = document.createElement("span");
+                          fileNameSpan.textContent = budgetFiles[0].name;
+                          budgetLabel.appendChild(fileNameSpan);
+                        }
+                      }}
+                    />
+                    <div className={`${styles.file_label_container} mt-3`}>
+                      <span className="file-label-budget fs-6 text-primary"></span>
+                    </div>
                   </Col>
                 </Row>
               </Container>
             </>
 
-            <div className="d-flex justify-content-end me-4">
+            <div className="d-flex justify-content-end me-4 mb-4">
               <button
-                disabled={isSubmitting}
+                className={styles.cssbuttons_io_button}
                 onClick={handleSubmit(onSave)}
                 type="submit"
-                className="btn btn-primary mb-4"
               >
-                {isSubmitting ? (
-                  <div
-                    className="spinner-border text-light spinner-border-sm"
-                    role="status"
+                Submit
+                <div className={styles.icon}>
+                  <svg
+                    height="24"
+                    width="24"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                ) : (
-                  "Submit"
-                )}
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                    <path
+                      d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                      fill="currentColor"
+                    ></path>
+                  </svg>
+                </div>
               </button>
             </div>
             <ToastContainer position="top-center" />

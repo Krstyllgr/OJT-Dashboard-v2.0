@@ -14,6 +14,8 @@ import { signUpValidation } from "@/pages/schema";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import styles from "@/styles/Home.module.css";
+
 
 function Index() {
     const { formState: { errors } } = useForm({
@@ -82,7 +84,9 @@ function Index() {
     try {
       mutate(userData);
       console.log("Successfully updated the User Information:", userData);
-      toast.success("Successfully updated the User Information.");
+      toast.success("Successfully updated the proposal.", {
+        autoClose: 1200, 
+      });
     } catch (error) {
       console.log(error);
     }
@@ -116,16 +120,25 @@ function Index() {
                     <Button
                       variant="outline-light border-0"
                       onClick={handleSave}
+                      className={styles.edit_button}
                     >
-                      Save <FontAwesomeIcon icon={faSave} className="ms-2" />
+                      Save{" "}
+                      <FontAwesomeIcon
+                        icon={faSave}
+                        className={`${styles.svg_icon} ms-2`}
+                      />
                     </Button>
                   ) : (
                     <Button
                       variant="outline-light border-0"
                       onClick={handleEdit}
+                      className={styles.edit_button}
                     >
                       Edit{" "}
-                      <FontAwesomeIcon icon={faPenToSquare} className="ms-2" />
+                      <FontAwesomeIcon
+                        icon={faPenToSquare}
+                        className={`${styles.svg_icon} ms-2`}
+                      />
                     </Button>
                   )}
                 </div>
