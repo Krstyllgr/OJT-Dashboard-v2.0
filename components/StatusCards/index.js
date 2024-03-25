@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar/Navbar";
 import { useQuery } from "@tanstack/react-query";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCircleChevronRight,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCircleChevronRight } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { useStore } from "@/pages/store";
 import { Row, Col, Modal } from "react-bootstrap";
@@ -19,16 +17,16 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
     data: statusData,
     isLoading,
     isError,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: ["draftsList"],
     queryFn: getStatus,
   });
 
-    useEffect(() => {
-      // Refetch data when props change
-      refetch();
-    }, [proposalStatus, getStatus, dataStatus, refetch]);
+  useEffect(() => {
+    // Refetch data when props change
+    refetch();
+  }, [proposalStatus, getStatus, dataStatus, refetch]);
 
   useEffect(() => {
     const isLoggedIn = window.localStorage.getItem("isLoggedIn");
@@ -58,8 +56,6 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
     setReview,
     setMethodology,
     setReference,
-    setGantt,
-    setLIB,
     setTravelingCost,
     setTrainingExpenses,
     setSuppliesMaterials,
@@ -93,8 +89,6 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
     setReview(proposalStatus.reviewOfRelatedLiterature);
     setMethodology(proposalStatus.methodology);
     setReference(proposalStatus.references);
-    setGantt(proposalStatus.ganttChart);
-    setLIB(proposalStatus.lib);
     setTravelingCost({
       local:
         proposalStatus.lib && proposalStatus.lib

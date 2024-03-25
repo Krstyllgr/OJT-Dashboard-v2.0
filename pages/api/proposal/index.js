@@ -34,7 +34,7 @@ export const updateProposal = ({
   programTitle,
   projectLeader,
   projectStaff,
-  selectedSDGs,
+  sdg,
   startDate,
   endDate,
   executiveSummary,
@@ -44,14 +44,14 @@ export const updateProposal = ({
   reviewOfRelatedLiterature,
   methodology,
   references,
-  ganttChart,
+  workPlan,
   lib
 }) => {
   const response = axiosClient.put(`${status}/${id}`, {
     programTitle,
     projectLeader,
     projectStaff,
-    selectedSDGs,
+    sdg,
     startDate,
     endDate,
     executiveSummary,
@@ -61,7 +61,7 @@ export const updateProposal = ({
     reviewOfRelatedLiterature,
     methodology,
     references,
-    ganttChart,
+    workPlan,
     lib,
   });
   return response;
@@ -73,7 +73,7 @@ export const addProposal = async ({
   programTitle,
   projectLeader,
   projectStaff,
-  selectedSDGs,
+  sdg,
   startDate,
   endDate,
   executiveSummary,
@@ -83,7 +83,7 @@ export const addProposal = async ({
   reviewOfRelatedLiterature,
   methodology,
   references,
-  ganttChart,
+  workPlan,
   lib,
 }) => {
   try {
@@ -103,7 +103,7 @@ export const addProposal = async ({
       programTitle,
       projectLeader,
       projectStaff,
-      selectedSDGs,
+      sdg,
       startDate,
       endDate,
       executiveSummary,
@@ -113,7 +113,7 @@ export const addProposal = async ({
       reviewOfRelatedLiterature,
       methodology,
       references,
-      ganttChart,
+      workPlan,
       lib
     });
     return response;

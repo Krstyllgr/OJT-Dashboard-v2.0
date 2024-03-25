@@ -120,26 +120,26 @@ function Index() {
                   <h5 className="text-light mb-5">{userProfile[0].fullName}</h5>
                   {editMode ? (
                     <Button
-                      variant="outline-light border-0"
+                      variant="outline-light border-0 rounded-1"
                       onClick={handleSave}
                       className={styles.edit_button}
                     >
                       Save{" "}
                       <FontAwesomeIcon
                         icon={faSave}
-                        className={`${styles.svg_icon} ms-2`}
+                        className={`${styles.svg_icon} ms-2 rounded-1`}
                       />
                     </Button>
                   ) : (
                     <Button
-                      variant="outline-light border-0"
+                      variant="outline-light border-0 rounded-1"
                       onClick={handleEdit}
                       className={styles.edit_button}
                     >
                       Edit{" "}
                       <FontAwesomeIcon
                         icon={faPenToSquare}
-                        className={`${styles.svg_icon} ms-2`}
+                        className={`${styles.svg_icon} ms-2 rounded-1`}
                       />
                     </Button>
                   )}
@@ -320,7 +320,10 @@ function Index() {
                 </Form>
 
                 {editMode && (
-                  <Button variant="outline-light border-0" onClick={handleSave}>
+                  <Button
+                    variant="outline-light border-0 rounded-1"
+                    onClick={handleSave}
+                  >
                     Save <FontAwesomeIcon icon={faSave} className="ms-2" />
                   </Button>
                 )}

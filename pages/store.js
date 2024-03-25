@@ -11,8 +11,8 @@ export const useStore = create((set) => ({
   setProjectLeader: (projectLeader) => set({ projectLeader }),
   projectStaff: [{}],
   setProjectStaff: (projectStaff) => set({ projectStaff }),
-  sdg: {},
-  setSdg: (sdg) => set({ sdg }),
+  sdgoal: {},
+  setSdg: (sdgoal) => set({ sdgoal }),
   startDate: "",
   setStartDate: (startDate) => set({ startDate }),
   endDate: "",
@@ -31,10 +31,7 @@ export const useStore = create((set) => ({
   setMethodology: (methodology) => set({ methodology }),
   reference: "",
   setReference: (reference) => set({ reference }),
-  ganttChart: "",
-  setGantt: (ganttChart) => set({ ganttChart }),
-  lib: "",
-  setLIB: (lib) => set({ lib }),
+
 
   // LIB
   travelingCost: {
@@ -121,5 +118,3 @@ export const useStore = create((set) => ({
   disapprovedItems: "",
   setDisapprovedItems: (disapprovedItems) => set({ disapprovedItems }),
 }));
-
-

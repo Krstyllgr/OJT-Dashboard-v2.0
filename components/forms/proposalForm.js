@@ -35,8 +35,8 @@ function Proposal( ) {
   const rev = useStore((state) => state.review);
   const meth = useStore((state) => state.methodology);
   const refer = useStore((state) => state.reference);
-  const goal = useStore((state) => state.sdg);
-  const chart = useStore((state) => state.ganttChart);
+  const goal = useStore((state) => state.sdgoal);
+  const chart = useStore((state) => state.workPlan);
   const item = useStore((state) => state.lib);
 
   // Function to convert Base64 to file Blob
@@ -87,7 +87,7 @@ function Proposal( ) {
     register,
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setValue,
   } = useForm({
     resolver: yupResolver(proposalValidation),
@@ -239,15 +239,46 @@ function Proposal( ) {
     const updatedCheckedSDGs = [...checkedSDGs];
     updatedCheckedSDGs[index] = !updatedCheckedSDGs[index];
     setCheckedSDGs(updatedCheckedSDGs);
-    console.log("Checked SDGs:", updatedCheckedSDGs);
   };
 
   // SDG INITIAL VALUE
   const isSDGSelected = (index) => {
     if (!goal || !Array.isArray(goal)) return false; // Check if goal is undefined, null, or not an array
 
-    const sdgString = `SDG: ${index + 1}`;
+    const sdgString = `sdg${index + 1}`;
     return goal.includes(sdgString);
+  };
+
+  // DRAG AND DROP FOR GANTT CHART
+  const handleFiles = (files) => {
+    setGanttFiles(files);
+    const label = document.querySelector(".file-label-gantt");
+    label.textContent = "";
+    if (files && files.length >= 2) {
+      const fileCountSpan = document.createElement("span");
+      fileCountSpan.textContent = files.length + " files";
+      label.appendChild(fileCountSpan);
+    } else if (files && files.length === 1) {
+      const fileNameSpan = document.createElement("span");
+      fileNameSpan.textContent = files[0].name;
+      label.appendChild(fileNameSpan);
+    }
+  };
+
+  // DRAG AND DROP FOR LIB
+  const handleBudgetFiles = (files) => {
+    setBudgetFiles(files);
+    const budgetLabel = document.querySelector(".file-label-lib");
+    budgetLabel.textContent = "";
+    if (files && files.length >= 2) {
+      const fileCountSpan = document.createElement("span");
+      fileCountSpan.textContent = files.length + " files";
+      budgetLabel.appendChild(fileCountSpan);
+    } else if (files && files.length === 1) {
+      const fileNameSpan = document.createElement("span");
+      fileNameSpan.textContent = files[0].name;
+      budgetLabel.appendChild(fileNameSpan);
+    }
   };
 
   // FOR UPDATING THE DATABASE
@@ -267,7 +298,7 @@ function Proposal( ) {
     try {
       const checkedIndices = checkedSDGs.reduce((acc, isChecked, index) => {
         if (isChecked || isSDGSelected(index)) {
-          acc.push(`SDG: ${index + 1}`);
+          acc.push(`sdg${index + 1}`);
         }
         return acc;
       }, []);
@@ -300,7 +331,7 @@ function Proposal( ) {
         programTitle: formData.programTitle,
         projectLeader: projectLeaderData,
         projectStaff: projectStaffData,
-        selectedSDGs: checkedIndices,
+        sdg: checkedIndices,
         startDate: formData.startDate,
         endDate: formData.endDate,
         executiveSummary: formData.summary,
@@ -313,13 +344,16 @@ function Proposal( ) {
       };
 
       // Include both gantt and budget properties in passData
-      passData.ganttChart = ganttBase64 || passData.ganttChart || chart;
+      passData.workPlan = ganttBase64 || passData.workPlan || chart;
       passData.lib = budgetBase64 || passData.lib || item;
 
       await mutate(passData);
-      // console.log(ganttFiles); // CHECK IF GANTTFILES IS PRESENT
-      // console.log(budgetFiles); // CHECK IF BUDGETFILES IS PRESENT
-      console.log("Successfully updated the proposal:", passData); // LOG THE DATA BEING PASSED TO DB
+      console.log(
+        "Successfully updated the proposal:",
+        passData,
+        ganttFiles,
+        budgetFiles
+      ); // LOG THE DATA BEING PASSED TO DB
       toast.success("Successfully updated the proposal.", {
         autoClose: 1200,
       });
@@ -330,7 +364,6 @@ function Proposal( ) {
       });
     }
   };
-
 
   // Function to convert file to Base64
   const fileToBase64 = (file) => {
@@ -351,7 +384,7 @@ function Proposal( ) {
       <Navbar />
       <div>
         <FormProvider>
-          <Form>
+          <Form encType={"multipart/form-data"} onSubmit={handleSubmit(onSave)}>
             <>
               <Container fluid className={styles.container_width}>
                 <Row className="mb-3">
@@ -908,47 +941,52 @@ function Proposal( ) {
                     <h5 className="fw-bold" style={{ color: "#387ADF" }}>
                       Major Activities/Workplan (Gantt Chart)
                     </h5>
-                    <label
-                      htmlFor="ganttChart"
-                      className={`${styles.custom_file_upload}`}
-                    >
-                      Upload File
-                      <FontAwesomeIcon
-                        icon={faUpload}
-                        className="mt-2 fs-3"
-                      ></FontAwesomeIcon>
-                    </label>
-                    <input
-                      type="file"
-                      name="ganttChart"
-                      id="ganttChart"
-                      accept="application/pdf"
-                      hidden
-                      // multiple
-                      data-multiple-caption="{count} files selected"
-                      {...register("ganttChart")}
-                      onChange={(e) => {
-                        const files = e.target.files;
-                        setGanttFiles(files);
-                        const label = document.querySelector(".file-label-gantt");
-                        label.textContent = "";
-                        if (files && files.length >= 2) {
-                          const fileCountSpan = document.createElement("span");
-                          fileCountSpan.textContent = files.length + " files";
-                          label.appendChild(fileCountSpan);
-                        } else if (files && files.length === 1) {
-                          const fileNameSpan = document.createElement("span");
-                          fileNameSpan.textContent = files[0].name;
-                          label.appendChild(fileNameSpan);
-                        }
+                    <div
+                      className={`${styles.custom_file_upload} ${styles.drag_drop_area}`}
+                      onClick={() => {
+                        document.getElementById("workPlan").click();
                       }}
-                    />
-                    <div className={`${styles.file_label_container} mt-3`}>
-                      <span className="file-label-gantt fs-6 text-primary"></span>
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        // Add styles to indicate drag over
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        // Remove styles when drag leaves
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const files = e.dataTransfer.files;
+                        handleFiles(files);
+                      }}
+                    >
+                      <label htmlFor="workPlan">
+                        Upload File
+                        <span className="ms- me-2"></span>
+                        <FontAwesomeIcon
+                          icon={faUpload}
+                          className="mt-3 fs-2s"
+                        ></FontAwesomeIcon>
+                      </label>
+                      <input
+                        type="file"
+                        name="workPlan"
+                        id="workPlan"
+                        accept="application/pdf"
+                        hidden
+                        {...register("workPlan")}
+                        onChange={(e) => {
+                          handleFiles(e.target.files);
+                        }}
+                      />
+                      <div className={`${styles.file_label_container} mt-3`}>
+                        <span className="file-label-gantt fs-6 text-primary"></span>
+                      </div>
                     </div>
 
-                    <h6>
+                    <h6 className="mt-3">
                       Uploaded File:
+                      <span className="ms-2"></span>
                       <span>
                         <a href={ganttURL} target="_blank">
                           Gant Chart
@@ -962,45 +1000,51 @@ function Proposal( ) {
                     <h5 className="fw-bold" style={{ color: "#387ADF" }}>
                       Line Item Budget
                     </h5>
-                    <label
-                      htmlFor="lib"
-                      className={`${styles.custom_file_upload}`}
-                    >
-                      Upload File
-                      <FontAwesomeIcon icon={faUpload} className="ms-2 fs-4" />
-                    </label>
-                    <input
-                      type="file"
-                      name="lib"
-                      id="lib"
-                      accept="application/pdf"
-                      hidden
-                      // multiple
-                      {...register("lib")}
-                      onChange={(e) => {
-                        const budgetFiles = e.target.files;
-                        setBudgetFiles(budgetFiles);
-                        const budgetLabel =
-                          document.querySelector(".file-label-lib");
-                        budgetLabel.textContent = "";
-                        if (budgetFiles && budgetFiles.length >= 2) {
-                          const fileCountSpan = document.createElement("span");
-                          fileCountSpan.textContent =
-                            budgetFiles.length + " files";
-                          budgetLabel.appendChild(fileCountSpan);
-                        } else if (budgetFiles && budgetFiles.length === 1) {
-                          const fileNameSpan = document.createElement("span");
-                          fileNameSpan.textContent = budgetFiles[0].name;
-                          budgetLabel.appendChild(fileNameSpan);
-                        }
+                    <div
+                      className={`${styles.custom_file_upload} ${styles.drag_drop_area}`}
+                      onClick={() => {
+                        document.getElementById("lib").click();
                       }}
-                    />
-                    <div className={`${styles.file_label_container} mt-3`}>
-                      <span className="file-label-lib fs-6 text-primary"></span>
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        // Add styles to indicate drag over
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        // Remove styles when drag leaves
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const budgetFiles = e.dataTransfer.files;
+                        handleBudgetFiles(budgetFiles);
+                      }}
+                    >
+                      <label htmlFor="lib">
+                        Upload File
+                        <FontAwesomeIcon
+                          icon={faUpload}
+                          className="ms-2 fs-4"
+                        />
+                      </label>
+                      <input
+                        type="file"
+                        name="lib"
+                        id="lib"
+                        accept="application/pdf"
+                        hidden
+                        {...register("lib")}
+                        onChange={(e) => {
+                          handleBudgetFiles(e.target.files);
+                        }}
+                      />
+                      <div className={`${styles.file_label_container} mt-3`}>
+                        <span className="file-label-lib fs-6 text-primary"></span>
+                      </div>
                     </div>
 
-                    <h6>
+                    <h6 className="mt-3">
                       Uploaded File:
+                      <span className="ms-2"></span>
                       <span>
                         <a href={budgetURL} target="_blank">
                           Line Item Budget
@@ -1013,11 +1057,7 @@ function Proposal( ) {
             </>
 
             <div className="d-flex justify-content-end me-4 mb-4">
-              <button
-                className={styles.cssbuttons_io_button}
-                onClick={handleSubmit(onSave)}
-                type="submit"
-              >
+              <button className={styles.cssbuttons_io_button} type="submit">
                 Submit
                 <div className={styles.icon}>
                   <svg
