@@ -8,7 +8,7 @@
   import { addNewUser } from "../api/proposal";
   import { useMutation } from "@tanstack/react-query";
   import styles from "@/styles/Home.module.css"
-  import { signUpValidation } from "@/pages/schema";
+  import { signUpValidation } from "@/schema";
 
 
 function Signup() {
@@ -157,10 +157,10 @@ function Signup() {
                       </div>
                     </div>
                     <div className="col">
-                      <div class="input mb-3">
+                      <div className="input mb-3">
                         {" "}
                         {/* Correct class name */}
-                        <label for="gender">Gender</label>{" "}
+                        <label htmlFor="gender">Gender</label>{" "}
                         {/* Updated for attribute */}
                         <select
                           className="form-select"

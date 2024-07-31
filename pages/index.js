@@ -42,10 +42,10 @@ function Home() {
   const [cards] = useState([
     {
       // DRAFTS
-      title: "Drafts",
+      title: "New Proposal",
       icon: faFile,
       color: "linear-gradient(40deg, #2193b0, #6dd5ed)",
-      link: "/drafts",
+      link: "/addProposal",
     },
     {
       // EVALUATION
@@ -95,7 +95,9 @@ function Home() {
                   ></FontAwesomeIcon>
                   {"Hello "}
                 </h4>
-                <h6 className="ms-5">Submissions: Proponents</h6>
+                <h4 className="ms-5">
+                  {loggedIn && JSON.parse(window.localStorage.getItem("user")).name}
+                </h4>
                 <hr></hr>
               </Container>
 

@@ -2,31 +2,37 @@ import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar/Navbar";
 import { useQuery } from "@tanstack/react-query";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleChevronRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCircleChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
-import { useStore } from "@/pages/store";
+import { useStore } from "@/store/store";
 import { Row, Col, Modal } from "react-bootstrap";
 import styles from "@/styles/Home.module.css";
 
-const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
+const StatusCards = ({ proposalStatus, getStatus, dataStatus, proponentId }) => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentDraft, setCurrentDraft] = useState(1);
 
   const {
     data: statusData,
     isLoading,
     isError,
-    refetch,
+    refetch
   } = useQuery({
     queryKey: ["draftsList"],
-    queryFn: getStatus,
+    queryFn: () => getStatus(proponentId),
   });
 
-  useEffect(() => {
-    // Refetch data when props change
-    refetch();
-  }, [proposalStatus, getStatus, dataStatus, refetch]);
+
+  // console.log("Data received from endpoint:", statusData);
+
+    useEffect(() => {
+      // Refetch data when props change
+      refetch();
+    }, [proposalStatus, getStatus, dataStatus, proponentId, refetch]);
 
   useEffect(() => {
     const isLoggedIn = window.localStorage.getItem("isLoggedIn");
@@ -43,7 +49,7 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
   const {
     setStatusId,
     setId,
-    setProgramTitle,
+    setProjectTitle,
     setProjectStaff,
     setProjectLeader,
     setSdg,
@@ -70,16 +76,18 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
     setOtherMaintenance,
     setRepresentation,
     setOthers,
+    setWorkPlan,
+    setResume
   } = useStore();
 
   // SET STATE FROM DRAFTS IN DATABASE
   const handleStore = (proposalStatus) => {
     setStatusId(dataStatus);
     setId(proposalStatus.id);
-    setProgramTitle(proposalStatus.programTitle);
+    setProjectTitle(proposalStatus.projectTitle);
     setProjectLeader(proposalStatus.projectLeader);
     setProjectStaff(proposalStatus.projectStaff);
-    setSdg(proposalStatus.selectedSDGs);
+    setSdg(proposalStatus.sdg);
     setStartDate(proposalStatus.startDate);
     setEndDate(proposalStatus.endDate);
     setSummary(proposalStatus.executiveSummary);
@@ -89,6 +97,8 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
     setReview(proposalStatus.reviewOfRelatedLiterature);
     setMethodology(proposalStatus.methodology);
     setReference(proposalStatus.references);
+    setWorkPlan(proposalStatus.workPlan);
+    setResume(proposalStatus.resume);
     setTravelingCost({
       local:
         proposalStatus.lib && proposalStatus.lib
@@ -102,34 +112,35 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
     setTrainingExpenses(proposalStatus.lib?.trainingExpenses || "N/A");
     setSuppliesMaterials({
       officeSupplies:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.officeMaterials
           ? proposalStatus.lib.officeMaterials
           : "N/A",
       accountableForms:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.accountableForm
           ? proposalStatus.lib.accountableForm
           : "N/A",
       drugsMedicine:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.drugsAndMedicine
           ? proposalStatus.lib.drugsAndMedicine
           : "N/A",
       laboratoryExpenses:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.laboratoryExpenses
           ? proposalStatus.lib.laboratoryExpenses
           : "N/A",
       textbookInstructional:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib &&
+        proposalStatus.lib.textbookAndInstructionalMaterials
           ? proposalStatus.lib.textbookAndInstructionalMaterials
           : "N/A",
     });
     setPostageDeliveries(proposalStatus.lib?.postageDeliveries || "N/A");
     setCommunicationExpenses({
       telephoneExpenses:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.communicationExpensesTelephone
           ? proposalStatus.lib.communicationExpensesTelephone
           : "N/A",
       internetExpenses:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.communicationExpensesInternet
           ? proposalStatus.lib.communicationExpensesInternet
           : "N/A",
     });
@@ -140,29 +151,29 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
     setSubscriptionDelivery(proposalStatus.lib?.subscriptionExpenses || "N/A");
     setProfessionalServices({
       consultancyServices:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.consultancyServices
           ? proposalStatus.lib.consultancyServices
           : "N/A",
       generalServices:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.generalServices
           ? proposalStatus.lib.generalServices
           : "N/A",
     });
     setRepairMaintenance({
       itEquipment:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.itEquipmentAndSoftware
           ? proposalStatus.lib.itEquipmentAndSoftware
           : "N/A",
       laboratoryEquipment:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.laboratoryEquipment
           ? proposalStatus.lib.laboratoryEquipment
           : "N/A",
       technicalScientificEquipment:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.technicalAndScientificEquipment
           ? proposalStatus.lib.technicalAndScientificEquipment
           : "N/A",
       machineriesEquipment:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.machineriesAndEquipment
           ? proposalStatus.lib.machineriesAndEquipment
           : "N/A",
     });
@@ -171,16 +182,18 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
     );
     setOtherMaintenance({
       advertisingExpenses:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.advertisingExpenses
           ? proposalStatus.lib.advertisingExpenses
           : "N/A",
       printingBindingExpenses:
-        proposalStatus.lib && proposalStatus.lib
+        proposalStatus.lib && proposalStatus.lib.printingAndBindingExpenses
           ? proposalStatus.lib.printingAndBindingExpenses
           : "N/A",
     });
     setRepresentation(proposalStatus.lib?.representation || "N/A");
-    setOthers(proposalStatus.lib?.others || "N/A");
+    setOthers(proposalStatus.lib?.others || []);
+
+    // console.log("editing")
   };
 
   // FUNCTION TO HANDLE PAGINATION: SETS THE CURRENT PAGE TO THE SELECTED PAGE NUMBER
@@ -214,10 +227,31 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
 
   // EXTRACT THE DRAFTS TO BE DISPLAYED ON THE CURRENT PAGE FROM THE 'DRAFTS' DATA,
   // SLICING THE ARRAY FROM THE INDEX OF THE FIRST proposalStatus TO THE INDEX OF THE LAST proposalStatus
-  const currentDrafts = statusData?.data.slice(
-    indexOfFirstDrafts,
-    indexOfLastDrafts
-  );
+  // const currentDrafts = statusData?.data.slice(
+  //   indexOfFirstDrafts,
+  //   indexOfLastDrafts
+  // );
+  
+  const currentDrafts = statusData?.data?.proposals || [];
+  // console.log(currentDrafts)
+
+  let currentDraftsStatus = []
+
+  for (let i = 0; i < currentDrafts.length; i++) {
+    if (currentDrafts[i].status == proposalStatus) {
+      currentDraftsStatus.push(currentDrafts[i]);
+    }
+  }
+
+  // const currentDrafts = statusData?.data && Array.isArray(statusData.data) ? statusData.data.slice(
+  //   indexOfFirstDrafts,
+  //   indexOfLastDrafts
+  // ) : [];
+
+  // // Add a conditional rendering for cases where statusData.data is not an array
+  // if (!Array.isArray(statusData.data)) {
+  //   return <div>No data available</div>; // Or any other appropriate message
+  // }
 
   return (
     <div>
@@ -226,19 +260,19 @@ const StatusCards = ({ proposalStatus, getStatus, dataStatus }) => {
           <Navbar />
           <div className="container mt-5 ms-5">
             <div className="row justify-content-center">
-              {currentDrafts.map((proposalStatus, index) => (
+              {currentDraftsStatus.map((proposalStatus, index) => (
                 <div key={index} className="col-md-8 mb-4">
                   <div className={`${styles.card_box} card border-2`}>
                     <div className="card-body">
                       <Row>
                         <Col>
                           <h5 className="card-title fw-bold">
-                            {proposalStatus.programTitle}
+                            {proposalStatus.projectTitle}
                           </h5>
                           <h6 className="card-text">
-                            Start Date: {proposalStatus.startDate}
+                            Start Date: {new Date(proposalStatus.startDate).toLocaleDateString()}
                             <br />
-                            End Date: {proposalStatus.endDate}
+                            End Date: {new Date(proposalStatus.endDate).toLocaleDateString()}
                           </h6>
                         </Col>
                         <Col className="border-start border-2">

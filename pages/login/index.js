@@ -13,7 +13,7 @@ import styles from "/styles/Home.module.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { signInValidation } from "@/pages/schema";
+import { signInValidation } from "@/schema";
 
 function Login() {
   const [mail, setMail] = useState("");
@@ -30,36 +30,44 @@ function Login() {
   const router = useRouter();
 
   const onSubmit = async () => {
-    fetch(`http://localhost:4000/user?email=${mail}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data.length > 0) {
-          const user = data[0];
-          if (user.password === password) {
-            // toast.success("Login successful", { position: "top-center" });
-            router.push("/");
-            window.localStorage.setItem("isLoggedIn", true);
-            window.localStorage.setItem("userEmail", mail);
-            // Redirect user to the dashboard or perform other actions here
-          } else {
-            toast.error("Incorrect password", { position: "top-center" });
-            // Display error message or handle incorrect password scenario
-          }
-        } else {
-          toast.error("User not found", { position: "top-center" });
-          // Display error message or handle user not found scenario
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-        toast.error("Error fetching data", { position: "top-center" });
+    try {
+      const response = await fetch('http://localhost:4001/proponent/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: mail,
+          password: password
+        })
       });
+  
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+  
+      const data = await response.json();
+  
+      if (data.token) {
+        // Store tokens securely
+        window.localStorage.setItem("token", data.token);
+        window.localStorage.setItem("refreshToken", data.refreshToken);
+        // Store user info
+        window.localStorage.setItem("user", JSON.stringify(data.user));
+        // Redirect user to home page
+        router.push("/");
+        // Set login status
+        window.localStorage.setItem("isLoggedIn", true);
+      } else {
+        // Handle error when token is not returned
+        toast.error("Invalid response from server", { position: "top-center" });
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("Error fetching data", { position: "top-center" });
+    }
   };
+  
 
   return (
     <div className={styles.backgroundsignup}>

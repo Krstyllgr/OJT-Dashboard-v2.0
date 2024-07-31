@@ -10,17 +10,18 @@ import { getUserProfile, updateUserProfile } from "../api/proposal";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { signUpValidation } from "@/pages/schema";
+import { signUpValidation } from "@/schema";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styles from "@/styles/Home.module.css";
 
-
 function Index() {
-    const { formState: { errors } } = useForm({
-      resolver: yupResolver(signUpValidation),
-    });
+  const {
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(signUpValidation),
+  });
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -64,7 +65,7 @@ function Index() {
 
   const handleCloseModal = () => setShowModal(false);
   const handleEdit = () => setEditMode(true);
-  
+
   const handleSave = () => {
     setEditMode(false);
     setShowPassword(false);
@@ -83,8 +84,8 @@ function Index() {
     try {
       mutate(userData);
       console.log("Successfully updated the User Information:", userData);
-      toast.success("Successfully updated the proposal.", {
-        autoClose: 1200, 
+      toast.success("Successfully updated the User Information.", {
+        autoClose: 1200,
       });
     } catch (error) {
       console.log(error);
@@ -97,8 +98,6 @@ function Index() {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
-
 
   return (
     <div>

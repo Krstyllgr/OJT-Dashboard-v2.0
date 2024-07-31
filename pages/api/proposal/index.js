@@ -8,7 +8,13 @@ export const getDrafts = () => {
 };
 
 export const getEvaluation = () => {
-  const response = axiosClient.get("/evaluation");
+  const response = axiosClient.get("/proposal/find");
+  return response;
+};
+
+export const getProposalsByProponentAndStatus = (proponentId) => {
+  const url = `/proposal/find/${proponentId}`;
+  const response = axiosClient.get(url);
   return response;
 };
 
@@ -31,9 +37,9 @@ export const getDisapproved = () => {
 export const updateProposal = ({
   status,
   id,
-  programTitle,
+  projectTitle,
   projectLeader,
-  projectStaff,
+  projectMembers,
   sdg,
   startDate,
   endDate,
@@ -44,13 +50,38 @@ export const updateProposal = ({
   reviewOfRelatedLiterature,
   methodology,
   references,
+  travelingCostLocal,
+  travelingCostForeign,
+  trainingExpenses,
+  officeMaterials,
+  accountableForm,
+  drugsAndMedicine,
+  laboratoryExpenses,
+  textbookAndInstructionalMaterials,
+  postageDeliveries,
+  communicationExpensesTelephone,
+  communicationExpensesInternet,
+  rentExpenses,
+  transportationAndDeliveryExpenses,
+  subscriptionExpenses,
+  consultancyServices,
+  generalServices,
+  itEquipmentAndSoftware,
+  laboratoryEquipment,
+  technicalAndScientificEquipment,
+  machineriesAndEquipment,
+  taxesDutiesPatentAndLicenses,
+  advertisingExpenses,
+  printingAndBindingExpenses,
+  representation,
+  others,
   workPlan,
-  lib
+  resume
 }) => {
   const response = axiosClient.put(`${status}/${id}`, {
-    programTitle,
+    projectTitle,
     projectLeader,
-    projectStaff,
+    projectMembers,
     sdg,
     startDate,
     endDate,
@@ -61,18 +92,44 @@ export const updateProposal = ({
     reviewOfRelatedLiterature,
     methodology,
     references,
+    lib: {
+      travelingCostLocal,
+      travelingCostForeign,
+      trainingExpenses,
+      officeMaterials,
+      accountableForm,
+      drugsAndMedicine,
+      laboratoryExpenses,
+      textbookAndInstructionalMaterials,
+      postageDeliveries,
+      communicationExpensesTelephone,
+      communicationExpensesInternet,
+      rentExpenses,
+      transportationAndDeliveryExpenses,
+      subscriptionExpenses,
+      consultancyServices,
+      generalServices,
+      itEquipmentAndSoftware,
+      laboratoryEquipment,
+      technicalAndScientificEquipment,
+      machineriesAndEquipment,
+      taxesDutiesPatentAndLicenses,
+      advertisingExpenses,
+      printingAndBindingExpenses,
+      representation,
+      others,
+    },
     workPlan,
-    lib,
+    resume,
   });
   return response;
 };
 
-
 // ADDING NEW DATA IN THE DATABASE
 export const addProposal = async ({
-  programTitle,
+  projectTitle,
   projectLeader,
-  projectStaff,
+  projectMembers,
   sdg,
   startDate,
   endDate,
@@ -83,38 +140,95 @@ export const addProposal = async ({
   reviewOfRelatedLiterature,
   methodology,
   references,
+  travelingCostLocal,
+  travelingCostForeign,
+  trainingExpenses,
+  officeMaterials,
+  accountableForm,
+  drugsAndMedicine,
+  laboratoryExpenses,
+  textbookAndInstructionalMaterials,
+  postageDeliveries,
+  communicationExpensesTelephone,
+  communicationExpensesInternet,
+  rentExpenses,
+  transportationAndDeliveryExpenses,
+  subscriptionExpenses,
+  consultancyServices,
+  generalServices,
+  itEquipmentAndSoftware,
+  laboratoryEquipment,
+  technicalAndScientificEquipment,
+  machineriesAndEquipment,
+  taxesDutiesPatentAndLicenses,
+  advertisingExpenses,
+  printingAndBindingExpenses,
+  representation,
+  others,
   workPlan,
-  lib,
+  resume,
+  proponent_id,
 }) => {
   try {
-    // FETCH THE LATEST ID IN EVALUATION
-    const latestIdResponse = await axiosClient.get("/evaluation");
-    // FIND THE MAXIMUM ID FROM THE RESPONSE DATA
-    const latestId = latestIdResponse.data.reduce(
-      (maxId, proposal) => Math.max(maxId, proposal.id),
-      0
-    );
-    // INCREMENT THE LATEST ID TO GENERATE THE NEW ID
-    const newId = latestId + 1;
+    // if (!lib.others) {
+    //   throw new Error("'lib' object or 'others' property is undefined");
+    // }
+    // // FETCH THE LATEST ID IN EVALUATION
+    // const latestIdResponse = await axiosClient.get("http://localhost:4001/proposal/create");
+    // // FIND THE MAXIMUM ID FROM THE RESPONSE DATA
+    // const latestId = latestIdResponse.data.reduce(
+    //   (maxId, proposal) => Math.max(maxId, proposal.id),
+    //   0
+    // );
+    // // INCREMENT THE LATEST ID TO GENERATE THE NEW ID
+    // const newId = latestId + 1;
 
     // POST THE NEW PROPOSAL IN EVALUATION WITH THE NEW GENERATED ID
-    const response = await axiosClient.post("/evaluation", {
-      id: newId,
-      programTitle,
-      projectLeader,
-      projectStaff,
-      sdg,
+    const response = await axiosClient.post("http://localhost:4001/proposal/create", {
+      // id: newId,
+      projectTitle,
+      projectLeader: projectLeader,
+      projectMembers: projectMembers, // Make sure projectMembers is an array of objects
+      sdg: sdg,
       startDate,
       endDate,
       executiveSummary,
       generalObjective,
       specObjective,
       rationalSignificance,
-      reviewOfRelatedLiterature,
+      rrl: reviewOfRelatedLiterature,
       methodology,
-      references,
+      reference: references,
+      lib: {
+        travelingCostLocal,
+        travelingCostForeign,
+        trainingExpenses,
+        officeMaterials,
+        accountableForm,
+        drugsAndMedicine,
+        laboratoryExpenses,
+        textbookAndInstructionalMaterials,
+        postageDeliveries,
+        communicationExpensesTelephone,
+        communicationExpensesInternet,
+        rentExpenses,
+        transportationAndDeliveryExpenses,
+        subscriptionExpenses,
+        consultancyServices,
+        generalServices,
+        itEquipmentAndSoftware,
+        laboratoryEquipment,
+        technicalAndScientificEquipment,
+        machineriesAndEquipment,
+        taxesDutiesPatentAndLicenses,
+        advertisingExpenses,
+        printingAndBindingExpenses,
+        representation,
+        others,
+      },
       workPlan,
-      lib
+      resume,
+      proponent_id,
     });
     return response;
   } catch (error) {
@@ -124,7 +238,16 @@ export const addProposal = async ({
 };
 
 // ADDING NEW USER
-export const addNewUser = async ({fullName, username, email, password, phoneNumber, gender, affiliation, designation}) => {
+export const addNewUser = async ({
+  fullName,
+  username,
+  email,
+  password,
+  phoneNumber,
+  gender,
+  affiliation,
+  designation,
+}) => {
   try {
     // FETCH THE LATEST ID FROM THE USER
     const latestIdResponse = await axiosClient.get("/user");
@@ -146,7 +269,7 @@ export const addNewUser = async ({fullName, username, email, password, phoneNumb
       phoneNumber,
       gender,
       affiliation,
-      designation
+      designation,
     });
     return response;
   } catch (error) {
@@ -190,5 +313,3 @@ export const updateUserProfile = ({
     console.error("Error updating user profile:", error);
   }
 };
-
-

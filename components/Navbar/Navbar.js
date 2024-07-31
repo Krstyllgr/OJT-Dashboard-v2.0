@@ -46,7 +46,7 @@ function Navigationbar() {
     {
       id: 2,
       title: "New Proposal",
-      link: "/proposal",
+      link: "/addProposal",
       icon: faFileCirclePlus,
     },
     {
